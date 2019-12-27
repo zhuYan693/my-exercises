@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    li {
+      list-style: none;
+    }
+
+    #box {
+      position: relative;
+      width: 400px;
+      height: 560px;
+      margin: 40px auto 0;
+      border: 6px solid #ccc;
+      overflow: hidden;
+    }
+
+    .screen {
+      width: 400px;
+      height: 560px;
+      position: relative;
+    }
+
+    #box ul {
+      position: absolute;
+      width: 2000px;
+    }
+
+    #box li {
+      float: left;
+    }
+
+    #box ol {
+      position: absolute;
+      bottom: 10px;
+      right: 0;
+    }
+
+    #box ol li {
+      width: 12px;
+      height: 12px;
+      background-color: #fff;
+      border-radius: 50%;
+      margin: 0 8px;
+      cursor: pointer;
+    }
+
+    #box ol li.current {
+      background-color: #FF8400;
+    }
+
+    .arr {
+      display: none;
+    }
+
+    .left, .right {
+      position: absolute;
+      top: 50%;
+      margin-top: -20px;
+      width: 40px;
+      height: 40px;
+      background-color: rgba(255, 255, 255, .6);
+      font-size: 30px;
+      color: #666;
+      font-weight: bold;
+      line-height: 35px;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .left {
+      left: 0;
+    }
+
+    .right {
+      right: 0;
+    }
+
+    .left:hover,
+    .right:hover {
+      background-color: rgba(255, 255, 255, .8);
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+<div id="box">
+  <div class="screen">
+    <ul>
+      <li><img src="img/1.jpg" alt=""></li>
+      <li><img src="img/2.jpg" alt=""></li>
+      <li><img src="img/3.jpg" alt=""></li>
+      <li><img src="img/4.jpg" alt=""></li>
+
+    </ul>
+    <ol>
+      <li class="current"></li>
+      <li></li>
+      <li></li>
+      <li></li>
+    </ol>
+  </div>
+  <div class="arr">
+    <div class="left"> <</div>
+    <div class="right"> ></div>
+  </div>
+</div>
+<script type="text/javascript" src="common.js"></script>
+<script type="text/javascript">
+  var that = null;
+  //获取相关元素
+
+  (function () {
+    function Getele() {
+
+    }
+
+    Getele.prototype.getElements = function () {
+      this.box = my$("box");
+      //获取相框
+      this.screen = box.children[0];
+      //获取移动的ul
+      this.ulObj = this.screen.children[0];
+      //获取小圆点按钮
+      this.list = this.screen.children[1].children;
+      //获取图片的宽度
+      this.imgWidth = this.screen.offsetWidth;
+      //获取左右按钮
+      this.arr = document.getElementsByClassName("arr")[0];
+      //获取右侧按钮
+      this.right = document.getElementsByClassName("right")[0];
+      //获取左侧按钮
+      this.left = document.getElementsByClassName("left")[0];
+      this.index = 0;
+
+    };
+
+    window.Getele = new Getele();
+  }());
+  Getele.getElements();
+
+  //创建slider构造函数
+  function Slider(json) {
+    this.box = json.box;
+    this.ul = json.ul;
+    this.imgWidth = json.imgWidth;
+    this.list = json.list;
+    this.right =json. right;
+    this.left = json.left;
+    this.arr = json.arr;
+    that = this;
+
+  }
+
+  Slider.prototype.getEle = function () {
+
+  };
+  //在原型中添加 小圆点处理函数 以及克隆
+  Slider.prototype.circular = function () {
+    //为每个小圆点添加鼠标进入事件
+    for (var i = 0, len = that.list.length; i < len; i++) {
+      //为每一个按钮添加自定义属性Getele.index
+      that.list[i].setAttribute("Getele.index", i);
+      that.list[i].onclick = function () {
+        //消除其他按钮的颜色
+        for (var i = 0, len = that.list.length; i < len; i++) {
+          that.list[i].removeAttribute("class");
+        }
+        //当前点击的按钮有颜色
+        this.setAttribute("class", "current");
+        //获取当前点击按钮的索引值
+        Getele.index = this.getAttribute("Getele.index");
+
+        that.animate(that.ul, -Getele.index * that.imgWidth);
+      }
+    }
+    that.ul.appendChild(that.ul.children[0].cloneNode(true));
+  };
+  //创建动画函数
+  Slider.prototype.animate = function (ele, target) {
+    clearInterval(ele.timeId);
+    ele.timeId = setInterval(function () {
+      var current = ele.offsetLeft;
+      var step = 10;
+      step = current < target ? step : -step;
+      current += step;
+      if (Math.abs(current - target) < Math.abs(step)) {
+        ele.style.left = target + "px";
+        clearInterval(ele.timeId);
+      } else {
+        ele.style.left = current + "px";
+      }
+    }, 10);
+  };
+  //右侧按钮的方法
+  Slider.prototype.rightMove = function () {
+    //为右按钮注册点击事件
+
+    that.right.onclick = that.rightBtn;
+
+  };
+  //右按钮的事件处理函数
+  Slider.prototype.rightBtn = function () {
+    //向右移
+    //判断 当图片为克隆的图片时 立即跳转到第一张图片
+
+    if (Getele.index === that.ul.children.length - 1) {
+      Getele.index = 0;
+      that.ul.style.left = 0 + "px";
+    }
+    Getele.index++;
+    that.animate(that.ul, -Getele.index * that.imgWidth);
+    //排他实现小红点更新
+    //当为最后一张图片时(克隆的) 第一个小按钮设置样式  且最后一个按钮样式消除
+    if (Getele.index === that.ul.children.length - 1) {
+      that.list[0].setAttribute("class", "current");
+      that.list[that.list.length - 1].removeAttribute("class");
+    } else {
+      for (var i = 0, len = that.list.length; i < len; i++) {
+        that.list[i].removeAttribute("class");
+      }
+      that.list[Getele.index].className = "current";
+    }
+
+
+  };
+
+
+  Slider.prototype.leftMove = function () {
+    that.left.onclick = function () {
+
+      //当是第一张图片时 跳转到最后一张
+      if (Getele.index === 0) {
+        Getele.index = that.ul.children.length - 1;
+        that.ul.style.left = -Getele.index * that.imgWidth + "px";
+      }
+
+      Getele.index--;
+      that.animate(that.ul, -Getele.index * that.imgWidth);
+      for (var i = 0, len = that.list.length; i < len; i++) {
+        that.list[i].removeAttribute("class");
+      }
+      that.list[Getele.index].className = "current";
+    }
+  };
+
+  Slider.prototype.runPlay = function () {
+    that.circular();
+    that.rightMove();
+    that.leftMove();
+    that.loopPlay();
+  };
+  Slider.prototype.loopPlay = function () {
+    var timeId = setInterval(that.rightBtn, 1000);
+    // 鼠标进入大盒子
+    that.box.onmouseover = function () {
+      clearInterval(timeId);
+      that.arr.style.display = "block";
+    };
+    that.box.onmouseout = function () {
+      timeId = setInterval(that.rightBtn, 1000);
+      that.arr.style.display = "none";
+    };
+  };
+  var json = {
+    box: Getele.box,
+    ul: Getele.ulObj,
+    imgWidth: Getele.imgWidth,
+    list: Getele.list,
+    right: Getele.right,
+    left: Getele.left,
+    arr: Getele.arr
+  };
+  var slider = new Slider(json);
+  slider.runPlay();
+
+
+</script>
+</body>
+</html>
